@@ -1,98 +1,109 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Keycloak RBAC with NestJS
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This project implements a flexible Role-Based Access Control (RBAC) system using Keycloak and NestJS. It is designed to provide a "Loyverse-like" experience for managing permissions and roles.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🏗 RBAC Architecture
 
-## Description
+The project follows a specific philosophy for managing access:
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- **Realm Roles as Project Roles**: Realm-level roles represent broad "Job Titles" or "Personas" within the project (e.g., `Owner`, `Manager`, `Cashier`).
+- **Client Roles as Permissions**: Client-level roles represent granular "Permissions" or "Actions" (e.g., `orders:create`, `inventory:view`, `settings:manage`).
+- **Permission Assignment**: To grant a permission to a role, you **assign Client Roles into Realm Roles** using Keycloak's composite roles feature.
+- **User Assignment**: Users are then assigned to **Realm Roles** to inherit all the associated permissions (Client Roles).
 
-## Project setup
+This approach allows for a clean separation between "What someone is" (Realm Role) and "What someone can do" (Client Role).
+
+---
+
+## ⚖️ Why this approach? (Architectural Decision)
+
+You might wonder why we use **Composite Roles** (Realm + Client roles) instead of Keycloak's built-in **Authorization Services** (Resources, Scopes, Policies, and Permissions). Here is the reasoning:
+
+1.  **Reduced Complexity**: Keycloak's formal Authorization Services (Resource-Based Access Control) are powerful but extremely verbose. They require managing complex policy evaluation logic and multiple entities for every single action. Using Client Roles as permissions keeps the logic "flat" and easy to reason about.
+2.  **JWT Performance**: In this model, permissions (Client Roles) are encoded directly into the Access Token. The NestJS application can verify access locally without making a secondary back-channel request to Keycloak to evaluate a policy, significantly reducing latency.
+3.  **Developer Experience (DX)**: Checking for a specific string like `orders:create` in a guard is much simpler to debug and test than troubleshooting why a "Time-based Policy" or "JavaScript Policy" denied a request in the Keycloak engine.
+4.  **UI Syncing**: It is much easier for a Frontend application to hide/show buttons based on a simple list of `roles` in the token than to query the `entitlement` API for every UI element.
+5.  **Administrative Clarity**: This mirrors the "Loyverse" model where an admin creates a "Role" and simply checks boxes (Permissions). In Keycloak, this is perfectly represented by dragging Client Roles into a Composite Realm Role.
+
+---
+
+## 🚀 Getting Started
+
+### 1. Environment Setup
+
+Create a `.env` file in the root directory (refer to `example.env`):
+
+````env
+KEYCLOAK_BASE_URL=http://localhost:8080
+KEYCLOAK_REALM_NAME=your-realm
+KEYCLOAK_CLIENT_ID=admin-cli
+KEYCLOAK_CLIENT_SECRET=your-client-secret
+KEYCLOAK_GRANT_TYPE=client_credentials
+KEYCLOAK_AUTH_REALM=master
+
+# Default Client for Permission Management
+KEYCLOAK_DEFAULT_CLIENT_UUID=your-client-uuid
+
+## 🚀 Getting Started
+
+### 1. Environment Setup
+
+Create a `.env` file in the root directory (refer to `example.env`):
+
+```env
+KEYCLOAK_BASE_URL=http://localhost:8080
+KEYCLOAK_REALM_NAME=your-realm
+KEYCLOAK_CLIENT_ID=admin-cli
+KEYCLOAK_CLIENT_SECRET=your-client-secret
+KEYCLOAK_GRANT_TYPE=client_credentials
+KEYCLOAK_AUTH_REALM=master
+
+# Default Client for Permission Management
+KEYCLOAK_DEFAULT_CLIENT_UUID=your-client-uuid
+````
+
+### 2. Installation
 
 ```bash
 $ npm install
 ```
 
-## Compile and run the project
+### 3. Running the App
 
 ```bash
 # development
-$ npm run start
-
-# watch mode
 $ npm run start:dev
-
-# production mode
-$ npm run start:prod
 ```
 
-## Run tests
+## 🛠 Features & API Endpoints
 
-```bash
-# unit tests
-$ npm run test
+### Users
 
-# e2e tests
-$ npm run test:e2e
+- `GET /users`: List all users.
+- `POST /users`: Create a new user.
+- `POST /users/role-mappings/realm`: Assign Realm Roles (Project Roles) to a user.
+- `POST /users/role-mappings/clients`: Assign Client Roles (Direct Permissions) to a user.
 
-# test coverage
-$ npm run test:cov
-```
+### Clients & Permissions
 
-## Deployment
+- `GET /clients`: List all clients.
+- `GET /client-roles`: List all permissions (client roles) for the default client.
+- `POST /client-roles`: Create a new permission (client role).
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Role-Permission Management
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+- `POST /roles/:realmRoleId/permissions`: Assign Client Roles (Permissions) to a Realm Role (Project Role).
+- `GET /roles/:realmRoleId/permissions`: Get all permissions associated with a Realm Role.
+- `DELETE /roles/:realmRoleId/permissions`: Remove permissions from a Realm Role.
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+## 🛡 Security Guards
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+The project includes custom decorators and guards to enforce RBAC:
 
-## Resources
+- `@RealmRoles('Manager')`: Restricts access based on Realm Roles.
+- `@ClientRoles('orders:create')`: Restricts access based on Client Roles (Permissions).
+- `KeycloakRolesGuard`: Handles the validation of both Realm and Client roles from the JWT token.
 
-Check out a few resources that may come in handy when working with NestJS:
+## 📜 License
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+This project is [MIT licensed](LICENSE).

@@ -29,8 +29,6 @@ export class CreateUserDto {
     enabled?: boolean;
 }
 
-
-
 export class UserRoleMappingDto {
     @ApiProperty({
         example: '8bc23a...',
@@ -69,6 +67,25 @@ export class AssignClientRolesDto {
     @ApiProperty({
         type: [UserRoleMappingDto],
         description: 'List of roles to assign'
+    })
+    @IsArray()
+    @ValidateNested({ each: true })
+    @Type(() => UserRoleMappingDto)
+    roles: UserRoleMappingDto[];
+}
+
+export class AssignRealmRolesDto {
+    @ApiProperty({
+        example: 'user-uuid-123',
+        description: 'The internal UUID of the user'
+    })
+    @IsNotEmpty()
+    @IsString()
+    userId: string;
+
+    @ApiProperty({
+        type: [UserRoleMappingDto],
+        description: 'List of realm roles to assign'
     })
     @IsArray()
     @ValidateNested({ each: true })

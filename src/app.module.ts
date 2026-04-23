@@ -10,6 +10,7 @@ import { ClientRolesController } from './controllers/client-roles.controller';
 import { KeycloakExceptionFilter } from './keycloak/keycloak-exception.filter';
 import { ClientsController } from './controllers/clients.controller';
 import { RolePermissionsController } from './controllers/role-permission.controller';
+import { AuthModule } from './auth/auth.module';
 
 
 @Module({
@@ -18,6 +19,7 @@ import { RolePermissionsController } from './controllers/role-permission.control
       isGlobal: true,
     }),
     KeycloakModule,
+    AuthModule,
   ],
   controllers: [
     AppController,

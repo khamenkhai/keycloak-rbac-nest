@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from "@nestjs/common";
 import { ApiBody, ApiOperation, ApiParam, ApiTags } from "@nestjs/swagger";
 import { KeycloakService } from "src/keycloak/keycloak.service";
-import { AssignClientRolesDto, CreateUserDto, UserRoleMappingDto } from "./dto/user.dto";
+import { AssignClientRolesDto, AssignRealmRolesDto, CreateUserDto, UserRoleMappingDto } from "./dto/user.dto";
 
 @ApiTags('Users')
 @Controller('users')
@@ -115,5 +115,54 @@ export class UsersController {
     };
 
     return auditResponse;
+  }
+
+  @Get(':userId/role-mappings/realm')
+  @ApiOperation({ summary: 'List realm roles assigned to a user' })
+  @ApiParam({ name: 'userId', description: 'Internal UUID of the user' })
+  async findRealmRoleMappings(@Param('userId') id: string) {
+    return this.keycloak.users.listRealmRoleMappings({ id });
+  }
+
+  @Post('role-mappings/realm')
+  @ApiOperation({ summary: 'Assign realm roles to a user' })
+  async addRealmRoleMappings(@Body() dto: AssignRealmRolesDto) {
+    await this.keycloak.users.addRealmRoleMappings({
+      id: dto.userId,
+      roles: dto.roles.map((role) => ({
+        id: role.roleId,
+        name: role.roleName,
+      })),
+    });
+
+    return {
+      status: 'success',
+      message: 'Realm roles assigned successfully! 👑',
+      userId: dto.userId,
+      roles: dto.roles.map((r) => r.roleName),
+    };
+  }
+
+  @Delete(':userId/role-mappings/realm')
+  @ApiOperation({ summary: 'Remove realm roles from a user' })
+  @ApiBody({ type: [UserRoleMappingDto] })
+  async removeRealmRoleMappings(
+    @Param('userId') id: string,
+    @Body() roles: UserRoleMappingDto[],
+  ) {
+    await this.keycloak.users.delRealmRoleMappings({
+      id: id,
+      roles: roles.map((role) => ({
+        id: role.roleId,
+        name: role.roleName,
+      })),
+    });
+
+    return {
+      status: 'removed',
+      message: 'Realm roles removed successfully 🌬️',
+      userId: id,
+      removedRoles: roles.map((r) => r.roleName),
+    };
   }
 }

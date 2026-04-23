@@ -5,41 +5,56 @@ import RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRep
 import { AssignPermissionsDto } from './dto/assign-permission.dto';
 
 @ApiTags('Role Permissions')
-@Controller('roles/:id/permissions')
+@Controller('roles/:realmRoleId/permissions')
 export class RolePermissionsController {
-    constructor(private readonly keycloak: KeycloakService) { }
+  constructor(private readonly keycloak: KeycloakService) {}
 
-    @Post()
-    @ApiOperation({ summary: 'Assign permissions to a realm role' })
-    @ApiParam({ name: 'id', description: 'The UUID of the Realm Role' })
-    @ApiResponse({ status: 201, description: 'Permissions assigned successfully.' })
-    async assignPermissions(
-        @Param('id') id: string,
-        @Body() body: AssignPermissionsDto
-    ) {
+  @Post()
+  @ApiOperation({
+    summary: 'Assign client roles (permissions) to a realm role',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Permissions assigned successfully.',
+  })
+  async assignPermissions(@Body() dto: AssignPermissionsDto) {
+    await this.keycloak.roles.createComposite(
+      { roleId: dto.realmRoleId },
+      dto.permissions,
+    );
 
-        await this.keycloak.roles.createComposite(
-            { roleId: id },
-            body.permissions
-        );
-        return { message: 'Permissions assigned successfully' };
-    }
+    return { message: 'Permissions assigned successfully' };
+  }
 
-    @Get()
-    @ApiOperation({ summary: 'Get all permissions (client roles) assigned to a role' })
-    @ApiParam({ name: 'id', description: 'The UUID of the Realm Role' })
-    async getPermissions(@Param('id') id: string) {
-        return this.keycloak.roles.getCompositeRoles({ id });
-    }
+  @Get()
+  @ApiOperation({
+    summary: 'Get all client roles (permissions) assigned to a realm role',
+  })
+  @ApiParam({
+    name: 'realmRoleId',
+    description: 'The UUID of the REALM ROLE',
+  })
+  async getPermissions(@Param('realmRoleId') realmRoleId: string) {
+    return this.keycloak.roles.getCompositeRoles({ id: realmRoleId });
+  }
 
-    @Delete()
-    @ApiOperation({ summary: 'Unassign permissions from a role' })
-    @ApiParam({ name: 'id', description: 'The UUID of the Realm Role' })
-    async unassignPermissions(
-        @Param('id') id: string,
-        @Body() permissions: RoleRepresentation[]
-    ) {
-        await this.keycloak.roles.delCompositeRoles({ id }, permissions);
-        return { message: 'Permissions removed successfully' };
-    }
+  @Delete()
+  @ApiOperation({
+    summary: 'Remove client roles (permissions) from a realm role',
+  })
+  @ApiParam({
+    name: 'realmRoleId',
+    description: 'The UUID of the REALM ROLE',
+  })
+  async unassignPermissions(
+    @Param('realmRoleId') realmRoleId: string,
+    @Body() permissions: RoleRepresentation[],
+  ) {
+    await this.keycloak.roles.delCompositeRoles(
+      { id: realmRoleId },
+      permissions,
+    );
+
+    return { message: 'Permissions removed successfully' };
+  }
 }

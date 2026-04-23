@@ -8,4 +8,4 @@ import { KeycloakService } from './keycloak.service';
   providers: [KeycloakService],
   exports: [KeycloakService],
 })
-export class KeycloakModule { }
+export class KeycloakModule {}

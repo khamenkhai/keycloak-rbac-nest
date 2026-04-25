@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Delete, Body, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { KeycloakService } from '../keycloak/keycloak.service';
+import { ApiTags, ApiOperation, ApiParam } from '@nestjs/swagger';
+import { KeycloakService } from '../keycloak.service';
 import RoleRepresentation from '@keycloak/keycloak-admin-client/lib/defs/roleRepresentation';
-import { AssignPermissionsDto } from './dto/assign-permission.dto';
+import { AssignPermissionsDto } from '../dto/assign-permission.dto';
 
 @ApiTags('Role Permissions')
 @Controller('roles/:realmRoleId/permissions')
@@ -12,10 +12,6 @@ export class RolePermissionsController {
   @Post()
   @ApiOperation({
     summary: 'Assign client roles (permissions) to a realm role',
-  })
-  @ApiResponse({
-    status: 201,
-    description: 'Permissions assigned successfully.',
   })
   async assignPermissions(@Body() dto: AssignPermissionsDto) {
     await this.keycloak.roles.createComposite(

@@ -104,6 +104,32 @@ The project includes custom decorators and guards to enforce RBAC:
 - `@ClientRoles('orders:create')`: Restricts access based on Client Roles (Permissions).
 - `KeycloakRolesGuard`: Handles the validation of both Realm and Client roles from the JWT token.
 
+## 🧪 Example Module (Guard Testing)
+
+An example module is included to quickly test `KeycloakAuthGuard`, `RolesGuard`, and `PermissionsGuard` with dummy JSON responses:
+
+- `GET /example/public` (no guards)
+- `GET /example/auth` (auth only)
+- `GET /example/roles/admin` (requires realm role `admin`)
+- `GET /example/permissions/read` (requires client permission `read`)
+- `GET /example/roles-and-permissions` (requires realm role `manager` AND client permission `write`)
+
+### Mock mode (no Keycloak needed)
+
+Set:
+
+```bash
+export MOCK_KEYCLOAK_AUTH=true
+export KEYCLOAK_CLIENT_ID=test-client
+```
+
+Then call endpoints with:
+
+- `Authorization: Bearer mock`
+- optional `x-mock-username: alice`
+- optional `x-mock-realm-roles: admin,manager`
+- optional `x-mock-client-roles: read,write`
+
 ## 📜 License
 
 This project is [MIT licensed](LICENSE).

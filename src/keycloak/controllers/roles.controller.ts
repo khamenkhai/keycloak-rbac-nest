@@ -1,28 +1,47 @@
-import { Controller, Get, Post, Body, Param, Put, Delete, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
-import { KeycloakService } from '../keycloak/keycloak.service';
-import { CreateRoleDto } from './dto/create-role.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Put,
+  Delete,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
+import { KeycloakService } from '../keycloak.service';
+import { CreateRoleDto } from '../dto/create-role.dto';
 
 @ApiTags('Roles')
 @Controller('roles')
 export class RolesController {
-  constructor(private readonly keycloak: KeycloakService) { }
+  constructor(private readonly keycloak: KeycloakService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all user-defined roles from Keycloak' })
   async findAll() {
     const allRoles = await this.keycloak.roles.find();
-    const defaultRoles = ['offline_access', 'uma_authorization', 'default-roles-master'];
+    const defaultRoles = [
+      'offline_access',
+      'uma_authorization',
+      'default-roles-master',
+    ];
 
-    return allRoles.filter(role =>
-      !defaultRoles.includes(role.name || "") &&
-      !(role.name || "").startsWith('default-roles-')
+    return allRoles.filter(
+      (role) =>
+        !defaultRoles.includes(role.name || '') &&
+        !(role.name || '').startsWith('default-roles-'),
     );
   }
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a specific role by its ID' })
-  @ApiParam({ name: 'id', description: 'The UUID of the role', example: '1234-abcd-...' })
+  @ApiParam({
+    name: 'id',
+    description: 'The UUID of the role',
+    example: '1234-abcd-...',
+  })
   async findOne(@Param('id') id: string) {
     return this.keycloak.roles.findOneById({ id });
   }
@@ -37,14 +56,8 @@ export class RolesController {
   @Put(':id')
   @ApiOperation({ summary: 'Update an existing role by ID' })
   @ApiParam({ name: 'id', description: 'The UUID of the role to update' })
-  async update(
-    @Param('id') id: string,
-    @Body() updateRoleDto: CreateRoleDto
-  ) {
-    await this.keycloak.roles.updateById(
-      { id },
-      updateRoleDto
-    );
+  async update(@Param('id') id: string, @Body() updateRoleDto: CreateRoleDto) {
+    await this.keycloak.roles.updateById({ id }, updateRoleDto);
 
     return { message: `Role with ID ${id} updated successfully` };
   }

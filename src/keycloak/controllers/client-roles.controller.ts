@@ -7,20 +7,20 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiParam,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { KeycloakService } from '../keycloak/keycloak.service';
-import { CreateRoleDto } from './dto/create-role.dto';
-import { ClientIdDto } from './dto/client-id.dto';
+import { KeycloakService } from '../keycloak.service';
+import { CreateRoleDto } from '../dto/create-role.dto';
+import { ClientIdDto } from '../dto/client-id.dto';
+import { KeycloakAuthGuard } from 'src/common/guards/auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { PermissionsGuard } from 'src/common/guards/permission.guard';
+import { Permissions } from 'src/common/decorators/role-permission.decorator';
 
 @ApiTags('Client Roles')
+@UseGuards(KeycloakAuthGuard, RolesGuard, PermissionsGuard)
 @Controller('client-roles')
 export class ClientRolesController {
   constructor(
@@ -42,7 +42,6 @@ export class ClientRolesController {
   @ApiOperation({
     summary: 'List all roles for a client (default client if not provided)',
   })
-  @ApiResponse({ status: 200, description: 'List of client roles.' })
   async findAll(@Query() query: ClientIdDto) {
     const clientId = this.getClientId(query.clientId);
 
@@ -53,11 +52,6 @@ export class ClientRolesController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new role for a client' })
-  @ApiBody({ type: CreateRoleDto })
-  @ApiResponse({
-    status: 201,
-    description: 'Client role created successfully.',
-  })
   async create(
     @Body() createRoleDto: CreateRoleDto,
     @Query() query: ClientIdDto,
@@ -75,11 +69,6 @@ export class ClientRolesController {
   @ApiParam({
     name: 'roleName',
     description: 'Name of the role to update',
-  })
-  @ApiBody({ type: CreateRoleDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Client role updated successfully.',
   })
   async update(
     @Param('roleName') roleName: string,
@@ -99,10 +88,6 @@ export class ClientRolesController {
   @ApiParam({
     name: 'roleName',
     description: 'Name of the role to delete',
-  })
-  @ApiResponse({
-    status: 204,
-    description: 'Client role deleted successfully.',
   })
   async remove(
     @Param('roleName') roleName: string,

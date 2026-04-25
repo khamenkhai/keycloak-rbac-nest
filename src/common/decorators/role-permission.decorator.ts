@@ -1,0 +1,12 @@
+import { SetMetadata } from '@nestjs/common';
+
+// Keys for metadata
+export const ROLES_KEY = 'roles';
+export const PERMISSIONS_KEY = 'permissions';
+
+// Decorator for Realm Roles (Roles)
+export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);
+
+// Decorator for Client Roles (Permissions)
+export const Permissions = (...permissions: string[]) =>
+  SetMetadata(PERMISSIONS_KEY, permissions);

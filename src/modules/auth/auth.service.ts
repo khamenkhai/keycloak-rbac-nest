@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { KeycloakService } from '../keycloak/keycloak.service';
+import { KeycloakService } from '../../keycloak/keycloak.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -67,7 +67,6 @@ export class AuthService {
     try {
       const { password, ...userData } = registerDto;
 
-      // Create user
       const user = await this.keycloak.users.create({
         ...userData,
         enabled: true,

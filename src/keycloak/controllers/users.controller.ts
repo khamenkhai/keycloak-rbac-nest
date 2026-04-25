@@ -1,12 +1,26 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from "@nestjs/common";
-import { ApiBody, ApiOperation, ApiParam, ApiTags } from "@nestjs/swagger";
-import { KeycloakService } from "src/keycloak/keycloak.service";
-import { AssignClientRolesDto, AssignRealmRolesDto, CreateUserDto, UserRoleMappingDto } from "./dto/user.dto";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
+import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
+import { KeycloakService } from 'src/keycloak/keycloak.service';
+import {
+  AssignClientRolesDto,
+  AssignRealmRolesDto,
+  CreateUserDto,
+  UserRoleMappingDto,
+} from '../dto/user.dto';
 
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly keycloak: KeycloakService) { }
+  constructor(private readonly keycloak: KeycloakService) {}
 
   @Get()
   @ApiOperation({ summary: 'Get all users' })
@@ -47,29 +61,30 @@ export class UsersController {
   @Get(':userId/role-mappings/clients/:clientUuid')
   @ApiOperation({ summary: 'List client roles assigned to a user' })
   @ApiParam({ name: 'userId', description: 'Internal UUID of the user' })
-  @ApiParam({ name: 'clientUuid', description: 'Internal UUID (not Client ID) of the client' })
+  @ApiParam({
+    name: 'clientUuid',
+    description: 'Internal UUID (not Client ID) of the client',
+  })
   async findClientRoleMappings(
     @Param('userId') id: string,
     @Param('clientUuid') clientUniqueId: string,
   ) {
     return this.keycloak.users.listClientRoleMappings({
       id,
-      clientUniqueId
+      clientUniqueId,
     });
   }
 
   @Post('role-mappings/clients')
   @ApiOperation({ summary: 'Assign client roles to a user via Body' })
-  async addClientRoleMappings(
-    @Body() dto: AssignClientRolesDto,
-  ) {
+  async addClientRoleMappings(@Body() dto: AssignClientRolesDto) {
     const response = await this.keycloak.users.addClientRoleMappings({
       id: dto.userId,
       clientUniqueId: dto.clientUuid,
-      roles: dto.roles.map(role => ({
+      roles: dto.roles.map((role) => ({
         id: role.roleId,
-        name: role.roleName
-      }))
+        name: role.roleName,
+      })),
     });
 
     const manualResponse = {
@@ -79,8 +94,8 @@ export class UsersController {
       details: {
         targetUser: dto.userId,
         targetClient: dto.clientUuid,
-        rolesAdded: dto.roles.map(r => r.roleName)
-      }
+        rolesAdded: dto.roles.map((r) => r.roleName),
+      },
     };
 
     return manualResponse;
@@ -97,10 +112,10 @@ export class UsersController {
     const data = await this.keycloak.users.delClientRoleMappings({
       id: id,
       clientUniqueId: clientUniqueId,
-      roles: roles.map(role => ({
+      roles: roles.map((role) => ({
         id: role.roleId,
-        name: role.roleName
-      }))
+        name: role.roleName,
+      })),
     });
 
     const auditResponse = {
@@ -108,10 +123,10 @@ export class UsersController {
       message: 'Roles detached successfully 💨',
       target: {
         user: id,
-        client: clientUniqueId
+        client: clientUniqueId,
       },
-      removedRoles: roles.map(r => r.roleName),
-      timestamp: new Date().toISOString()
+      removedRoles: roles.map((r) => r.roleName),
+      timestamp: new Date().toISOString(),
     };
 
     return auditResponse;

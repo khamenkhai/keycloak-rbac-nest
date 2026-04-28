@@ -21,7 +21,11 @@ export class KeycloakExceptionFilter implements ExceptionFilter {
     if (exception.response && exception.responseData) {
       const status = exception.response.status || HttpStatus.BAD_REQUEST;
       const errorData = exception.responseData;
-      const message = errorData.errorMessage || errorData.error || exception.message || 'Keycloak Admin Error';
+      const message =
+        errorData.errorMessage ||
+        errorData.error ||
+        exception.message ||
+        'Keycloak Admin Error';
 
       this.logger.error(
         `Keycloak Admin API Error [${status}]: ${message}`,
@@ -38,7 +42,9 @@ export class KeycloakExceptionFilter implements ExceptionFilter {
     }
 
     // Default NestJS handling for other exceptions if not caught by other filters
-    const status = exception.getStatus ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    const status = exception.getStatus
+      ? exception.getStatus()
+      : HttpStatus.INTERNAL_SERVER_ERROR;
     const message = exception.message || 'Internal server error';
 
     this.logger.error(`Exception: ${message}`, exception.stack);

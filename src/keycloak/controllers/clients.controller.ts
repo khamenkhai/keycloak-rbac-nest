@@ -1,9 +1,11 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 import { KeycloakService } from '../keycloak.service';
 import { CreateClientDto } from '../dto/client-dto';
+import { KeycloakAuthGuard } from 'src/common/guards/auth.guard';
 
 @ApiTags('Clients')
+@UseGuards(KeycloakAuthGuard)
 @Controller('clients')
 export class ClientsController {
   constructor(private readonly keycloak: KeycloakService) {}

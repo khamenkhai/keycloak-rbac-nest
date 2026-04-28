@@ -8,12 +8,15 @@ import {
   Delete,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiBody } from '@nestjs/swagger';
 import { KeycloakService } from '../keycloak.service';
 import { CreateRoleDto } from '../dto/create-role.dto';
+import { KeycloakAuthGuard } from 'src/common/guards/auth.guard';
 
 @ApiTags('Roles')
+@UseGuards(KeycloakAuthGuard)
 @Controller('roles')
 export class RolesController {
   constructor(private readonly keycloak: KeycloakService) {}

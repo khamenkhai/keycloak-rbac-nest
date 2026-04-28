@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { KeycloakModule } from './keycloak/keycloak.module';
 import { UsersController } from './keycloak/controllers/users.controller';
 import { RolesController } from './keycloak/controllers/roles.controller';
@@ -13,6 +11,7 @@ import { RolePermissionsController } from './keycloak/controllers/role-permissio
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ExampleModule } from './modules/example/example.module';
+import { RbacUiController } from './ui/rbac-ui.controller';
 
 @Module({
   imports: [
@@ -27,15 +26,14 @@ import { ExampleModule } from './modules/example/example.module';
     ExampleModule,
   ],
   controllers: [
-    AppController,
     UsersController,
     RolesController,
     ClientRolesController,
     ClientsController,
     RolePermissionsController,
+    RbacUiController,
   ],
   providers: [
-    AppService,
     {
       provide: APP_FILTER,
       useClass: KeycloakExceptionFilter,

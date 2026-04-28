@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiParam, ApiTags } from '@nestjs/swagger';
 import { KeycloakService } from 'src/keycloak/keycloak.service';
@@ -16,8 +17,10 @@ import {
   CreateUserDto,
   UserRoleMappingDto,
 } from '../dto/user.dto';
+import { KeycloakAuthGuard } from 'src/common/guards/auth.guard';
 
 @ApiTags('Users')
+@UseGuards(KeycloakAuthGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly keycloak: KeycloakService) {}

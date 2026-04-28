@@ -15,12 +15,9 @@ import { KeycloakService } from '../keycloak.service';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { ClientIdDto } from '../dto/client-id.dto';
 import { KeycloakAuthGuard } from 'src/common/guards/auth.guard';
-import { RolesGuard } from 'src/common/guards/roles.guard';
-import { PermissionsGuard } from 'src/common/guards/permission.guard';
-import { Permissions } from 'src/common/decorators/role-permission.decorator';
 
 @ApiTags('Client Roles')
-@UseGuards(KeycloakAuthGuard, RolesGuard, PermissionsGuard)
+@UseGuards(KeycloakAuthGuard)
 @Controller('client-roles')
 export class ClientRolesController {
   constructor(
@@ -79,7 +76,7 @@ export class ClientRolesController {
 
     return this.keycloak.clients.updateRole(
       { id: clientId, roleName },
-      updateDto as any,
+      updateDto,
     );
   }
 

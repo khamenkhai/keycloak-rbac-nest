@@ -63,6 +63,47 @@ export class AuthService {
     }
   }
 
+  async refresh(refreshToken: string) {
+    const baseUrl = this.configService
+      .getOrThrow<string>('KEYCLOAK_BASE_URL')
+      .replace(/\/$/, '');
+    const realm = this.configService.getOrThrow<string>('KEYCLOAK_REALM_NAME');
+    const clientId =
+      this.configService.getOrThrow<string>('KEYCLOAK_CLIENT_ID');
+    const clientSecret = this.configService.getOrThrow<string>(
+      'KEYCLOAK_CLIENT_SECRET',
+    );
+
+    const tokenUrl = `${baseUrl}/realms/${realm}/protocol/openid-connect/token`;
+
+    const params = new URLSearchParams();
+    params.append('grant_type', 'refresh_token');
+    params.append('client_id', clientId);
+    params.append('client_secret', clientSecret);
+    params.append('refresh_token', refreshToken);
+
+    try {
+      const response = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params,
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new UnauthorizedException(
+          data.error_description || 'Invalid refresh token',
+        );
+      }
+
+      return data;
+    } catch (error) {
+      this.logger.error(`Refresh failed: ${error.message}`);
+      throw new UnauthorizedException('Session expired or invalid');
+    }
+  }
+
   async register(registerDto: RegisterDto) {
     try {
       const { password, ...userData } = registerDto;

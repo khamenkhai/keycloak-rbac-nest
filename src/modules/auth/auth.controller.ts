@@ -1,10 +1,18 @@
-import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  BadRequestException,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { KeycloakAuthGuard } from 'src/common/guards/auth.guard';
 import { User } from 'src/common/decorators/user.decorator';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -31,5 +39,14 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current logged-in user profile' })
   getMe(@User() user: any) {
     return user;
+  }
+
+  @Post('refresh')
+  @ApiOperation({ summary: 'Refresh access token using refresh token' })
+  async refresh(@Body() dto: RefreshTokenDto) {
+    if (!dto.refresh_token) {
+      throw new BadRequestException('Refresh token is required');
+    }
+    return this.authService.refresh(dto.refresh_token);
   }
 }

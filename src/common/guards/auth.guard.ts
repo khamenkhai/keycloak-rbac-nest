@@ -71,7 +71,8 @@ export class KeycloakAuthGuard implements CanActivate {
   private buildMockUser(request: Request) {
     const rawClaims = this.getHeader(request, 'x-mock-claims');
     if (rawClaims) {
-      const parsed = this.tryParseJson(rawClaims) ?? this.tryParseBase64Json(rawClaims);
+      const parsed =
+        this.tryParseJson(rawClaims) ?? this.tryParseBase64Json(rawClaims);
       if (parsed && typeof parsed === 'object') return parsed;
     }
 

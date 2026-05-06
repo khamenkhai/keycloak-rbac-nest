@@ -12,8 +12,7 @@ import * as jwt from 'jsonwebtoken';
 export class KeycloakAuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
-  private readonly jwksUri =
-    'http://localhost:8080/realms/POS/protocol/openid-connect/certs';
+  private readonly jwksUri = `http://localhost:8080/realms/${process.env.KEYCLOAK_REALM_NAME || ''}/protocol/openid-connect/certs`;
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
